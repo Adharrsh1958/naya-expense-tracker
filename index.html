@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Naya Expense Tracker</title>
+    <meta name="description" content="A private, local-first expense tracker for fast entry, trips, splits, subscriptions, budgets, and spending insights." />
+    <meta name="theme-color" content="#22262c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f4ee" media="(prefers-color-scheme: light)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Naya" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icons/icon-96.png" sizes="96x96" type="image/png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand">
+          <div class="brand-mark">₹</div>
+          <div>
+            <strong>Naya</strong>
+            <span>Expense clarity</span>
+          </div>
+        </div>
+        <nav class="nav-tabs" aria-label="Views">
+          <button class="nav-tab active" data-view="dashboard" title="Dashboard">⌂ <span>Home</span></button>
+          <button class="nav-tab" data-view="timeline" title="Timeline">≡ <span>Timeline</span></button>
+          <button class="nav-tab" data-view="trips" title="Trips">✦ <span>Trips</span></button>
+          <button class="nav-tab" data-view="split" title="Split expenses">÷ <span>Split</span></button>
+          <button class="nav-tab" id="moreNavBtn" data-view="__more__" title="More">⋯ <span>More</span></button>
+        </nav>
+        <div class="side-summary">
+          <span>Monthly rhythm</span>
+          <strong id="sideRhythm">On track</strong>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Manual-first, private by default</p>
+            <h1>Spend less time tracking. Know more sooner.</h1>
+          </div>
+          <div class="top-actions">
+            <button id="darkModeBtn" class="icon-button" title="Toggle dark mode" aria-label="Toggle dark mode">☽</button>
+            <button id="voiceBtn" class="icon-button" title="Voice entry" aria-label="Add expense by voice">◉</button>
+            <button id="exportBtn" class="icon-button" title="Export JSON" aria-label="Export backup as JSON">⇩</button>
+            <button id="importBtn" class="icon-button" title="Import JSON" aria-label="Import backup from JSON">⇪</button>
+            <label class="icon-button file-button" title="Scan receipt">
+              ⧉
+              <input id="receiptInput" type="file" accept="image/*" />
+            </label>
+          </div>
+        </header>
+
+        <section class="quick-entry" aria-labelledby="quickTitle">
+          <div class="entry-head">
+            <div>
+              <h2 id="quickTitle">Quick Add</h2>
+              <p>Try <button class="ghost-chip" data-example="120 dosa">120 dosa</button> or <button class="ghost-chip" data-example="250 petrol">250 petrol</button></p>
+            </div>
+            <span id="entryTimer">Target: under 5 sec</span>
+          </div>
+          <div class="budget-target-row" id="budgetTargetRow">
+            <span>Charging to:</span>
+            <button type="button" class="target-pill active" id="targetPersonal" data-target="personal">Personal budget</button>
+            <button type="button" class="target-pill" id="targetTrip" data-target="trip">Active trip</button>
+          </div>
+                    <form id="expenseForm" class="entry-form">
+            <div class="smart-input-wrap">
+              <span>₹</span>
+              <input id="smartInput" autocomplete="off" inputmode="decimal" placeholder="120 dosa, received 500 from Rahul, Rahul owes 400..." />
+            </div>
+            <button type="submit" class="save-button">Save</button>
+          </form>
+          <div class="suggestion-row" id="suggestionRow"></div>
+          <div class="receipt-row" id="receiptRow">
+            <label class="receipt-label" id="receiptAttachBtn" title="Attach receipt photo">
+              📷 <span>Attach receipt</span>
+              <input id="receiptPhotoInput" type="file" accept="image/*" capture="environment" />
+            </label>
+            <img id="receiptThumb" class="receipt-thumb" alt="Receipt" style="display:none" />
+            <button type="button" id="removeReceiptBtn" class="receipt-remove" style="display:none" title="Remove receipt" aria-label="Remove receipt photo">✕</button>
+          </div>
+          <div class="entry-grid">
+            <label>
+              Amount
+              <input id="amountInput" inputmode="decimal" type="number" min="0" step="1" />
+            </label>
+            <label>
+              Category
+              <select id="categoryInput"></select>
+            </label>
+            <label>
+              Merchant
+              <input id="merchantInput" />
+            </label>
+            <label>
+              Trip
+              <select id="tripInput"></select>
+            </label>
+            <label>
+              Wallet
+              <select id="walletInput"></select>
+            </label>
+          </div>
+        </section>
+
+        <section id="dashboard" class="view active-view">
+          <div id="budgetAlerts" class="budget-alerts-wrap"></div>
+          <div class="summary-grid">
+            <article class="metric primary">
+              <span>This Month</span>
+              <strong id="monthSpent">₹0</strong>
+              <p id="monthInsight">Add your first expense to unlock insights.</p>
+            </article>
+            <article class="metric">
+              <span>Budget Left</span>
+              <strong id="budgetLeft">₹0</strong>
+              <p id="budgetStatus">Set a monthly budget in User.</p>
+            </article>
+            <article class="metric">
+              <span>To Receive</span>
+              <strong id="receivedTotal">₹0</strong>
+              <p>Money others owe you.</p>
+            </article>
+            <article class="metric">
+              <span>Spent / Gave</span>
+              <strong id="givenTotal">₹0</strong>
+              <p>Your expenses plus what you owe.</p>
+            </article>
+            <article class="metric">
+              <span>Upcoming Bills</span>
+              <strong id="upcomingTotal">₹0</strong>
+              <p id="upcomingText">Nothing due this week.</p>
+            </article>
+          </div>
+
+          <div class="content-grid">
+            <section class="panel wide chart-panel">
+              <div class="panel-head">
+                <h2>Spending Trend</h2>
+                <select id="chartView" aria-label="Chart view">
+                  <option value="daily">Last 14 days</option>
+                  <option value="category">This month by category</option>
+                </select>
+              </div>
+              <div id="spendingChart" class="spending-chart" aria-label="Spending bar chart"></div>
+            </section>
+
+                        <section class="panel">
+              <div class="panel-head">
+                <h2>Top Categories</h2>
+                <select id="rangeSelect" aria-label="Time range">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly" selected>Monthly</option>
+                </select>
+              </div>
+              <div id="categoryList" class="category-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>Coach</h2>
+                <span class="soft-pill">Encouraging</span>
+              </div>
+              <div id="coachList" class="coach-list"></div>
+            </section>
+
+            <section class="panel wide">
+              <div class="panel-head">
+                <h2>Spending Heatmap</h2>
+                <span id="streakText"></span>
+              </div>
+              <div id="heatmap" class="heatmap" aria-label="Spending heatmap"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>Subscriptions</h2>
+                <button id="addSubBtn" class="mini-button">+</button>
+              </div>
+              <div id="subscriptionList" class="subscription-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>Smart Search</h2>
+              </div>
+              <input id="searchInput" class="search-input" placeholder="coffee, food, Jan to March..." />
+              <div id="searchResults" class="search-results"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="timeline" class="view">
+          <div class="view-toolbar">
+            <h2>Timeline</h2>
+            <div class="segmented" role="tablist">
+              <button class="mode active" data-mode="daily">Daily</button>
+              <button class="mode" data-mode="weekly">Weekly</button>
+              <button class="mode" data-mode="monthly">Monthly</button>
+            </div>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </section>
+
+        <section id="calendar" class="view">
+          <div class="view-toolbar">
+            <h2>Calendar</h2>
+            <span id="calendarMonth"></span>
+          </div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </section>
+
+        <section id="trips" class="view">
+          <div class="view-toolbar">
+            <h2>Trip Mode</h2>
+            <button id="newTripBtn" class="mini-button">+</button>
+          </div>
+          <div id="tripList" class="trip-list"></div>
+          <div id="tripDetail" class="trip-detail"></div>
+        </section>
+
+        <section id="split" class="view">
+          <div class="view-toolbar">
+            <h2>Split Expense</h2>
+          </div>
+          <form id="splitForm" class="split-form">
+            <div class="split-mode-picker span-3">
+              <span class="split-mode-picker-label">What happened?</span>
+              <select id="splitMode" aria-label="Split mode" class="visually-hidden-select">
+                <option value="youPaidGroup">I paid for a group</option>
+                <option value="friendPaidYou">Someone paid for me</option>
+                <option value="friendPaidGroup">Someone paid for a group</option>
+                <option value="youPaidOne">I paid for someone</option>
+                <option value="friendPaidOne">Someone paid for one or more people</option>
+                <option value="settlement">They paid me back (settle)</option>
+                <option value="iSettled">I paid them back (settle)</option>
+                <option value="thirdPartySettlement">Someone else paid someone else back</option>
+                <option value="selfExpenseTrip">My own expense (trip or personal)</option>
+                <option value="otherPaidSelf">Someone paid for themselves (trip record only)</option>
+              </select>
+              <div class="split-mode-grid" id="splitModeGrid">
+                <button type="button" class="split-mode-card active" data-mode="youPaidGroup"><span class="split-mode-icon">💰</span><span>I paid for a group</span></button>
+                <button type="button" class="split-mode-card" data-mode="friendPaidYou"><span class="split-mode-icon">🙋</span><span>Someone paid for me</span></button>
+                <button type="button" class="split-mode-card" data-mode="friendPaidGroup"><span class="split-mode-icon">🤝</span><span>Someone paid for a group</span></button>
+                <button type="button" class="split-mode-card" data-mode="youPaidOne"><span class="split-mode-icon">👤</span><span>I paid for one person</span></button>
+                <button type="button" class="split-mode-card" data-mode="friendPaidOne"><span class="split-mode-icon">➡️</span><span>Rahul paid for Priya</span></button>
+                <button type="button" class="split-mode-card" data-mode="settlement"><span class="split-mode-icon">✅</span><span>They paid me back</span></button>
+                <button type="button" class="split-mode-card" data-mode="iSettled"><span class="split-mode-icon">✅</span><span>I paid them back</span></button>
+                <button type="button" class="split-mode-card" data-mode="thirdPartySettlement"><span class="split-mode-icon">🔄</span><span>Two others settled up</span></button>
+                <button type="button" class="split-mode-card" data-mode="selfExpenseTrip"><span class="split-mode-icon">📝</span><span>My own expense</span></button>
+                <button type="button" class="split-mode-card" data-mode="otherPaidSelf"><span class="split-mode-icon">🧍</span><span>Their own expense</span></button>
+              </div>
+            </div>
+
+            <label class="split-field">
+              <span>Amount</span>
+              <input id="splitAmount" type="number" min="0" placeholder="0" />
+            </label>
+            <label class="split-field span-2">
+              <span>Trip</span>
+              <select id="splitTrip" aria-label="Trip"></select>
+            </label>
+
+            <label class="split-field" id="splitPaidByField">
+              <span id="splitPaidByLabel">Paid by</span>
+              <select id="splitPaidBySelect" aria-label="Who paid" style="display:none"></select>
+              <input id="splitPaidBy" placeholder="Paid by" value="You" />
+            </label>
+            <label class="split-field span-2" id="splitPeopleField">
+              <span id="splitPeopleLabel">Who's included <span id="splitPeopleHint" class="split-people-hint inline"></span></span>
+              <select id="splitPeopleSelect" multiple size="4" aria-label="Select trip members (hold Ctrl/Cmd for multi)" style="display:none"></select>
+              <input id="splitPeople" placeholder="People, comma separated" value="Rahul, Arjun" />
+            </label>
+
+            <details id="splitMoreDetails" class="split-more-details span-3">
+              <summary class="split-more-toggle">More details <span class="split-more-hint">— category, note, custom split %</span></summary>
+              <div class="split-more-grid">
+                <label class="split-field">
+                  <span>Category</span>
+                  <select id="splitCategory" aria-label="Category"></select>
+                </label>
+                <label class="split-field span-2">
+                  <span>What was it for?</span>
+                  <input id="splitNote" placeholder="e.g. Dinner" value="Dinner" />
+                </label>
+                <details id="advancedSplitSection" class="advanced-split span-3">
+                  <summary class="advanced-split-toggle">⚙ Custom percentages (instead of equal split)</summary>
+                  <div id="percentInputs" class="percent-grid"></div>
+                  <div id="percentTotal" class="percent-total"></div>
+                </details>
+              </div>
+            </details>
+            <button class="save-button span-3">Save Split</button>
+          </form>
+          <div id="splitResults" class="split-results"></div>
+          <div class="split-ledger-grid">
+            <section class="split-ledger-panel">
+              <div class="panel-head">
+                <h2>Who Owes Whom</h2>
+                <span id="ledgerCount" class="soft-pill">0 open</span>
+              </div>
+              <div id="ledgerList" class="split-results"></div>
+            </section>
+            <section class="split-ledger-panel">
+              <div class="panel-head">
+                <h2>Final By Person</h2>
+              </div>
+              <div id="personLedgerList" class="split-results"></div>
+            </section>
+            <section class="split-ledger-panel">
+              <div class="panel-head">
+                <h2>Saved Splits</h2>
+              </div>
+              <div id="savedSplitList" class="split-results"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="settings" class="view">
+          <div class="view-toolbar">
+            <h2>User</h2>
+          </div>
+          <div id="identityBanner" class="identity-banner" style="display:none">
+            <strong>Set your name first</strong> — it tells the split calculator who "you" are. Names like "me", "myself" and your name will all be treated as you.
+          </div>
+          <form id="settingsForm" class="settings-form">
+            <label class="name-label">
+              Your name <span class="identity-note">(used as "You" in splits)</span>
+              <input id="userNameInput" placeholder="e.g. Ravi, Priya..." />
+            </label>
+            <label>
+              Monthly Budget
+              <input id="monthlyBudgetInput" type="number" min="0" placeholder="Set your budget" />
+            </label>
+            <button class="save-button">Save User</button>
+          </form>
+          <section class="settings-panel">
+            <div class="panel-head">
+              <h2>Categories</h2>
+              <button id="addCategoryBtn" class="mini-button" title="Add category">+</button>
+            </div>
+            <p class="empty">Add a custom category any time from the Category dropdown, or here.</p>
+            <div id="customCategoryList" class="custom-category-list"></div>
+          </section>
+
+          <section class="settings-panel">
+            <div class="panel-head">
+              <h2>Category Budgets</h2>
+              <span class="soft-pill">Optional per-category limits</span>
+            </div>
+            <div id="catBudgetGrid" class="cat-budget-grid">
+              <p class="empty">Add some expenses first to set per-category limits.</p>
+            </div>
+          </section>
+
+          <section class="settings-panel">
+            <div class="panel-head">
+              <h2>Backup &amp; Restore</h2>
+            </div>
+            <p class="empty">Everything stays on this device. Export a backup before switching phones.</p>
+            <div class="data-action-row">
+              <button id="exportBtnSettings" class="mini-text">⇩ Export JSON</button>
+              <button id="importBtnSettings" class="mini-text">⇪ Import JSON</button>
+            </div>
+            <button id="resetDataBtn" class="danger-button">Clear All Data</button>
+          </section>
+        </section>
+  
+        <section id="reports" class="view">
+          <div class="view-toolbar">
+            <h2>Monthly Report</h2>
+            <div class="month-nav">
+              <button id="reportPrevBtn" class="icon-button" title="Previous month" aria-label="Previous month">‹</button>
+              <strong id="reportMonthLabel">—</strong>
+              <button id="reportNextBtn" class="icon-button" title="Next month" aria-label="Next month">›</button>
+            </div>
+          </div>
+          <div class="report-layout">
+            <div class="report-chart-col">
+              <div id="reportPieChart" class="pie-chart-wrap" aria-label="Category pie chart"></div>
+            </div>
+            <div class="report-table-col">
+              <div id="reportCategoryBreakdown" class="report-cat-list"></div>
+            </div>
+          </div>
+          <div class="panel report-trend-panel">
+            <div class="panel-head"><h2>6-Month Trend</h2></div>
+            <div id="reportTrendChart" class="spending-chart"></div>
+          </div>
+          <div id="reportSummary" class="report-summary-row"></div>
+        </section>
+
+        <section id="goals" class="view">
+          <div class="view-toolbar">
+            <h2>Savings Goals</h2>
+            <button id="addGoalBtn" class="mini-button" title="New goal">+</button>
+          </div>
+          <form id="goalForm" class="goal-form" style="display:none">
+            <input id="goalName" placeholder="Goal name (e.g. New Bike)" />
+            <input id="goalTarget" type="number" min="1" placeholder="Target amount ₹" />
+            <input id="goalSaved" type="number" min="0" placeholder="Already saved ₹" value="0" />
+            <input id="goalIcon" placeholder="Icon (emoji)" value="🎯" maxlength="2" />
+            <input id="goalDeadline" type="month" title="Target date (optional)" />
+            <input id="goalId" type="hidden" value="" />
+            <button class="save-button" type="submit">Save Goal</button>
+            <button type="button" id="cancelGoalBtn" class="mini-text">Cancel</button>
+          </form>
+          <div id="goalList" class="goal-list"></div>
+        </section>
+
+        <section id="wallets" class="view">
+          <div class="view-toolbar">
+            <h2>Wallets</h2>
+            <button id="addWalletBtn" class="mini-button" title="New wallet">+</button>
+          </div>
+          <div id="walletSummary" class="wallet-summary-grid"></div>
+          <form id="walletForm" class="wallet-form" style="display:none">
+            <input id="walletName" placeholder="Wallet name (e.g. Cash)" />
+            <input id="walletIcon" placeholder="Icon (emoji)" value="💳" maxlength="2" />
+            <input id="walletId" type="hidden" value="" />
+            <button class="save-button" type="submit">Save Wallet</button>
+            <button type="button" id="cancelWalletBtn" class="mini-text">Cancel</button>
+          </form>
+          <div id="walletList" class="wallet-manage-list"></div>
+        </section>
+    </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="modalOverlay" class="modal-overlay" hidden>
+      <div id="modalPanel" class="modal-panel" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <div id="tutorialOverlay" class="tutorial-overlay" hidden>
+      <div class="tutorial-card" role="dialog" aria-modal="true" aria-label="Tutorial">
+        <button class="tutorial-skip" id="tutorialSkipBtn">Skip tutorial</button>
+        <div class="tutorial-icon" id="tutorialIcon">⌂</div>
+        <h2 id="tutorialTitle">Welcome to Naya</h2>
+        <p id="tutorialBody"></p>
+        <div class="tutorial-dots" id="tutorialDots"></div>
+        <div class="tutorial-actions">
+          <button class="modal-cancel" id="tutorialBackBtn">Back</button>
+          <button class="save-button" id="tutorialNextBtn">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="moreOverlay" class="more-overlay" hidden>
+      <div class="more-sheet" role="dialog" aria-modal="true" aria-label="More options">
+        <div class="more-sheet-handle"></div>
+        <div class="more-sheet-grid">
+          <button class="more-item" data-view="calendar"><span class="more-item-icon">□</span><span>Calendar</span></button>
+          <button class="more-item" data-view="reports"><span class="more-item-icon">◎</span><span>Reports</span></button>
+          <button class="more-item" data-view="goals"><span class="more-item-icon">◈</span><span>Goals</span></button>
+          <button class="more-item" data-view="wallets"><span class="more-item-icon">◉</span><span>Wallets</span></button>
+          <button class="more-item" data-view="settings"><span class="more-item-icon">⚙</span><span>Settings</span></button>
+          <button class="more-item" id="moreTutorialBtn"><span class="more-item-icon">？</span><span>Tutorial</span></button>
+        </div>
+      </div>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
