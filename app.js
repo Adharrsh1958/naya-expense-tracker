@@ -313,6 +313,8 @@ function bindEvents() {
   document.getElementById("tutorialNextBtn")?.addEventListener("click", tutorialNext);
   document.getElementById("tutorialBackBtn")?.addEventListener("click", tutorialBack);
   document.getElementById("tutorialSkipBtn")?.addEventListener("click", finishTutorial);
+  document.getElementById("tutorialQuickBtn")?.addEventListener("click", () => selectTutorial("quick"));
+  document.getElementById("tutorialExtendedBtn")?.addEventListener("click", () => selectTutorial("extended"));
 
   document.querySelectorAll(".mode").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -2616,53 +2618,109 @@ function modalField(label, inputHtml, hint) {
 // SKIPPABLE ONBOARDING TUTORIAL
 // ══════════════════════════════════════════════════════════════════════════════
 
-const TUTORIAL_STEPS = [
+const TUTORIAL_STEPS_QUICK = [
   {
     icon: "\u2302",
     title: "Welcome to Naya",
-    body: "A fast, private expense tracker built for how you actually spend. Everything stays on this device \u2014 nothing is ever uploaded. Let's walk through the basics, takes under a minute.",
+    body: "A fast, private expense tracker built for how you actually spend. Everything stays on this device \u2014 nothing is ever uploaded. Here's a 1-minute overview.",
   },
   {
     icon: "\u20b9",
     title: "Quick Add Expenses",
-    body: "Type something like \u201c120 dosa\u201d in Quick Add on the Home screen. Naya guesses the amount, category and merchant automatically \u2014 just check it and hit Save. Correct a category once and it's remembered next time.",
+    body: "Type something like \u201c120 dosa\u201d in Quick Add on the Home screen. Naya guesses the amount, category and merchant automatically \u2014 just check it and hit Save.",
   },
   {
     icon: "\u2726",
     title: "Trip Mode",
-    body: "Create a Trip to group expenses with friends \u2014 set a budget and add who's coming. Every expense and split you tag to that trip rolls up into one running total automatically.",
+    body: "Create a Trip to group expenses with friends \u2014 set a budget and add who's coming. Every expense and split you tag to that trip rolls up into one running total.",
   },
   {
     icon: "\u00f7",
     title: "Split Expenses",
-    body: "In Split, pick what happened, who paid, and who's included \u2014 \u201cYou\u201d is always an option, but it never has to be. Naya works out exactly who owes who, and settles up with one tap.",
+    body: "In Split, pick what happened, who paid, and who's included \u2014 \u201cYou\u201d is always an option, but it never has to be. Naya works out exactly who owes who.",
   },
   {
     icon: "\u25ce",
     title: "Reports and Insights",
-    body: "Monthly reports, a spending heatmap, savings goals, and wallets all live under the More tab so the main navigation stays simple. You can replay this tutorial any time from More \u2192 Tutorial.",
+    body: "Monthly reports, a spending heatmap, savings goals, and wallets all live under the More tab. Replay this any time from More \u2192 Tutorial.",
   },
 ];
 
+const TUTORIAL_STEPS_EXTENDED = [
+  {
+    icon: "\u2302",
+    title: "Welcome to Naya",
+    body: "A fast, private expense tracker built for how you actually spend. Everything stays on this device \u2014 nothing is ever uploaded, ever. This walkthrough covers everything, takes about 3 minutes.",
+  },
+  {
+    icon: "\u20b9",
+    title: "Quick Add Expenses",
+    body: "Type something like \u201c120 dosa\u201d or \u201c350 fuel\u201d in Quick Add. Naya guesses the amount, category and merchant from the text. Correct a category once and it's remembered for next time \u2014 you can also add your own custom categories from the dropdown.",
+  },
+  {
+    icon: "\u2726",
+    title: "Trip Mode",
+    body: "Create a Trip to group expenses with friends or family \u2014 give it a budget and add who's coming. Every expense and split you tag to that trip rolls up into one running total, separate from your personal budget.",
+  },
+  {
+    icon: "\u00f7",
+    title: "Splitting an Expense",
+    body: "In Split, start with what happened: you paid for a group, someone paid for you, someone paid for one or more other people, or someone paid for themselves. Pick who paid and who's included \u2014 \u201cYou\u201d is always an option, but it's never assumed.",
+  },
+  {
+    icon: "\u2705",
+    title: "Settling Up",
+    body: "Naya keeps a running ledger of who owes who across every split. When money actually changes hands, record it as a settlement \u2014 they paid you back, you paid them back, or even two other people settled between themselves \u2014 and the balance updates instantly.",
+  },
+  {
+    icon: "\u25ce",
+    title: "Reports and Insights",
+    body: "The Reports tab (under More) breaks down any month by category with a pie chart and trend line. The Home screen also shows a spending heatmap and budget alerts as you approach your monthly limit.",
+  },
+  {
+    icon: "\u25c8",
+    title: "Goals and Wallets",
+    body: "Set a Savings Goal and chip away at it over time. Use Wallets to track Cash, UPI, Card and Bank separately, so you can see not just what you spent but how you paid for it.",
+  },
+  {
+    icon: "\u2699",
+    title: "Make it yours",
+    body: "Flip on dark mode from the top bar, set per-category budgets, and export a full JSON backup any time from Settings \u2014 especially useful before switching phones. Everything here can be replayed from More \u2192 Tutorial.",
+  },
+];
+
+let activeTutorialSteps = TUTORIAL_STEPS_QUICK;
 let tutorialStep = 0;
 
 function startTutorial() {
-  tutorialStep = 0;
   const overlay = document.getElementById("tutorialOverlay");
   if (!overlay) return;
   overlay.hidden = false;
+  showTutorialChoice();
+}
+
+function showTutorialChoice() {
+  document.getElementById("tutorialChoiceView").hidden = false;
+  document.getElementById("tutorialStepsView").hidden = true;
+}
+
+function selectTutorial(type) {
+  activeTutorialSteps = type === "extended" ? TUTORIAL_STEPS_EXTENDED : TUTORIAL_STEPS_QUICK;
+  tutorialStep = 0;
+  document.getElementById("tutorialChoiceView").hidden = true;
+  document.getElementById("tutorialStepsView").hidden = false;
   renderTutorialStep();
 }
 
 function renderTutorialStep() {
-  const step = TUTORIAL_STEPS[tutorialStep];
-  const isLast = tutorialStep === TUTORIAL_STEPS.length - 1;
+  const step = activeTutorialSteps[tutorialStep];
+  const isLast = tutorialStep === activeTutorialSteps.length - 1;
   const isFirst = tutorialStep === 0;
 
   document.getElementById("tutorialIcon").textContent = step.icon;
   document.getElementById("tutorialTitle").textContent = step.title;
   document.getElementById("tutorialBody").textContent = step.body;
-  document.getElementById("tutorialDots").innerHTML = TUTORIAL_STEPS
+  document.getElementById("tutorialDots").innerHTML = activeTutorialSteps
     .map((_, i) => `<span class="tutorial-dot ${i === tutorialStep ? "active" : ""}"></span>`).join("");
 
   const nextBtn = document.getElementById("tutorialNextBtn");
@@ -2672,7 +2730,7 @@ function renderTutorialStep() {
 }
 
 function tutorialNext() {
-  if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+  if (tutorialStep < activeTutorialSteps.length - 1) {
     tutorialStep++;
     renderTutorialStep();
   } else {
@@ -2684,6 +2742,8 @@ function tutorialBack() {
   if (tutorialStep > 0) {
     tutorialStep--;
     renderTutorialStep();
+  } else {
+    showTutorialChoice(); // stepping back from step 1 returns to the choice screen
   }
 }
 

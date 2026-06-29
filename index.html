@@ -74,7 +74,7 @@
                     <form id="expenseForm" class="entry-form">
             <div class="smart-input-wrap">
               <span>₹</span>
-              <input id="smartInput" autocomplete="off" inputmode="decimal" placeholder="120 dosa, received 500 from Rahul, Rahul owes 400..." />
+              <input id="smartInput" autocomplete="off" autocapitalize="off" autocorrect="off" inputmode="text" placeholder="120 dosa, received 500 from Rahul, Rahul owes 400..." />
             </div>
             <button type="submit" class="save-button">Save</button>
           </form>
@@ -443,14 +443,33 @@
 
     <div id="tutorialOverlay" class="tutorial-overlay" hidden>
       <div class="tutorial-card" role="dialog" aria-modal="true" aria-label="Tutorial">
-        <button class="tutorial-skip" id="tutorialSkipBtn">Skip tutorial</button>
-        <div class="tutorial-icon" id="tutorialIcon">⌂</div>
-        <h2 id="tutorialTitle">Welcome to Naya</h2>
-        <p id="tutorialBody"></p>
-        <div class="tutorial-dots" id="tutorialDots"></div>
-        <div class="tutorial-actions">
-          <button class="modal-cancel" id="tutorialBackBtn">Back</button>
-          <button class="save-button" id="tutorialNextBtn">Next</button>
+        <button class="tutorial-skip" id="tutorialSkipBtn">Skip</button>
+
+        <div id="tutorialChoiceView" class="tutorial-choice-view">
+          <div class="tutorial-icon">⌂</div>
+          <h2>Welcome to Naya</h2>
+          <p>How would you like to get started?</p>
+          <div class="tutorial-choice-grid">
+            <button type="button" class="tutorial-choice-card" id="tutorialQuickBtn">
+              <strong>Quick Tutorial</strong>
+              <span>A 1-minute overview of the core features</span>
+            </button>
+            <button type="button" class="tutorial-choice-card" id="tutorialExtendedBtn">
+              <strong>Extended Tutorial</strong>
+              <span>A detailed walkthrough \u2014 trips, splits, settlements, reports and more</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="tutorialStepsView" class="tutorial-steps-view" hidden>
+          <div class="tutorial-icon" id="tutorialIcon">⌂</div>
+          <h2 id="tutorialTitle">Welcome to Naya</h2>
+          <p id="tutorialBody"></p>
+          <div class="tutorial-dots" id="tutorialDots"></div>
+          <div class="tutorial-actions">
+            <button class="modal-cancel" id="tutorialBackBtn">Back</button>
+            <button class="save-button" id="tutorialNextBtn">Next</button>
+          </div>
         </div>
       </div>
     </div>
