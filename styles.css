@@ -2441,6 +2441,25 @@ h2 {
   .split-more-grid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 600px) {
+  /* Two columns still squeeze phrases like "Someone paid for a group" into
+     ~100px of usable text width after padding/icon, wrapping almost every
+     word onto its own line. Below 600px, give each card the full row. */
+  .split-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .split-mode-card {
+    align-items: center;
+    padding: 14px 16px;
+    min-height: 52px;
+  }
+
+  .split-mode-card span:last-child {
+    font-size: 0.92rem;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════ */
 /* LONG-TEXT SAFETY NET                                                       */
 /* User-entered names (people, merchants, trips, categories, notes) have no   */
